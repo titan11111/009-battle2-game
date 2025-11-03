@@ -9,7 +9,28 @@ const gameState = {
   gameStarted: false
 };
 
-let bgmField;
+let bgmField, seCorrect, seWrong, seLevelup;
+
+// 👈 新しく追加した関数
+function setupAudio() {
+  bgmField = document.getElementById("bgm-field");
+  seCorrect = document.getElementById("se-correct");
+  seWrong = document.getElementById("se-wrong");
+  seLevelup = document.getElementById("se-levelup");
+
+  // 相対パスでオーディオソースを設定
+  bgmField.src = "./audio/field.mp3";
+  seCorrect.src = "./audio/seikai2.mp3";
+  seWrong.src = "./audio/fuseikai2.mp3";
+  seLevelup.src = "./audio/levelup.mp3";
+
+  // 属性を設定
+  bgmField.loop = true;
+  bgmField.preload = "auto";
+  seCorrect.preload = "auto";
+  seWrong.preload = "auto";
+  seLevelup.preload = "auto";
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("ゲーム初期化開始");
@@ -17,7 +38,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const playerEl = document.getElementById("player");
   const areaEl = document.getElementById("game-area");
 
-  // CSS読み込み完了を待つ
   await new Promise(resolve => {
     if (document.readyState === 'complete') {
       resolve();
@@ -26,23 +46,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // プレイヤーの初期位置を設定（固定値を使用）
-  const playerWidth = 96;  // CSSで設定した値
-  const playerHeight = 96; // CSSで設定した値
-  const areaWidth = areaEl.clientWidth || window.innerWidth;
-  const areaHeight = areaEl.clientHeight || window.innerHeight;
+  // 👈 ここで setupAudio() を呼び出す
+  setupAudio();
   
-  gameState.player.x = (areaWidth / 2) - (playerWidth / 2);
-  gameState.player.y = (areaHeight / 2) - (playerHeight / 2);
-  
-  playerEl.style.left = gameState.player.x + "px";
-  playerEl.style.top = gameState.player.y + "px";
-
-  console.log(`プレイヤー初期位置: x=${gameState.player.x}, y=${gameState.player.y}`);
-  console.log(`ゲームエリアサイズ: ${areaWidth} x ${areaHeight}`);
-
-  bgmField = document.getElementById("bgm-field");
-
   // キーボードイベント
   document.addEventListener("keydown", e => { 
     keys[e.key] = true; 
