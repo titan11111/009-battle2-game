@@ -128,7 +128,8 @@ async function loadQuizData() {
     if (Object.keys(gameState.quizData).length === 0) {
       throw new Error("quizData.jsonが空です");
     }
-    console.log("クイズデータ読み込み成功。ジャンル数:", Object.keys(gameState.quizData).length);
+    console.log("✓ クイズデータ読み込み成功。ジャンル数:", Object.keys(gameState.quizData).length);
+    console.log("ジャンル一覧:", Object.keys(gameState.quizData).join(", "));
 
   } catch (error) {
     console.error("クイズデータ読み込みエラー:", error);
