@@ -351,9 +351,9 @@ function handleAnswer(correct, enemy) {
   quizEl.style.display = "none";
 
   if (correct) {
-    console.log("正解！");
-    if (document.getElementById("se-correct")) {
-      document.getElementById("se-correct").play();
+    console.log("✓ 正解！");
+    if (seCorrect) {
+      seCorrect.play().catch(e => console.warn("効果音再生エラー:", e));
     }
     
     // 敵を削除
