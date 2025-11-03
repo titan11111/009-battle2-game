@@ -148,8 +148,8 @@ function moveHero(dx, dy) {
   
   const area = document.getElementById("game-area");
   const playerEl = document.getElementById("player");
-  const playerWidth = 144;
-  const playerHeight = 144;
+  const playerWidth = 96;
+  const playerHeight = 96;
   
   const newX = gameState.player.x + dx * gameState.player.speed;
   const newY = gameState.player.y + dy * gameState.player.speed;
@@ -179,7 +179,7 @@ function spawnEnemies() {
   }
 
   const playerSize = 96;
-  const enemySize = 90;
+  const enemySize = 72;
   const safeZone = 150; // 安全地帯を少し小さく
   const numberOfEnemies = 8; // 敵の数を少し減らす
 
