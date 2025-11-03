@@ -188,7 +188,10 @@ function spawnEnemies() {
   for (let i = 0; i < numberOfEnemies; i++) {
     const el = document.createElement("div");
     el.className = "enemy";
-    el.style.backgroundImage = `url('./images/enemy${(i % 10) + 1}.png')`;
+    
+    // 敵の背景画像を設定（相対パスで指定）
+    const enemyImageNum = (i % 10) + 1;
+    el.style.backgroundImage = `url('./images/enemy${enemyImageNum}.png')`;
 
     let x, y;
     let validPosition = false;
