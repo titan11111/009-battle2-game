@@ -11,20 +11,17 @@ const gameState = {
 
 let bgmField, seCorrect, seWrong, seLevelup;
 
-// 👈 新しく追加した関数
 function setupAudio() {
   bgmField = document.getElementById("bgm-field");
   seCorrect = document.getElementById("se-correct");
   seWrong = document.getElementById("se-wrong");
   seLevelup = document.getElementById("se-levelup");
 
-  // 相対パスでオーディオソースを設定
   bgmField.src = "./audio/field.mp3";
   seCorrect.src = "./audio/seikai2.mp3";
   seWrong.src = "./audio/fuseikai2.mp3";
   seLevelup.src = "./audio/levelup.mp3";
 
-  // 属性を設定
   bgmField.loop = true;
   bgmField.preload = "auto";
   seCorrect.preload = "auto";
@@ -46,10 +43,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // 👈 ここで setupAudio() を呼び出す
   setupAudio();
   
-  // キーボードイベント
   document.addEventListener("keydown", e => { 
     keys[e.key] = true; 
     startBGM(); 
@@ -58,7 +53,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     delete keys[e.key]; 
   });
 
-  // タッチ操作
   [["btn-up","up"],["btn-down","down"],["btn-left","left"],["btn-right","right"]].forEach(([id,dir]) => {
     const btn = document.getElementById(id);
     if (btn) {
@@ -78,15 +72,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // リスタートボタン
   document.getElementById("restart-button").addEventListener("click", () => {
     location.reload();
   });
 
-  // クイズデータ読み込み
   await loadQuizData();
   
-  // 初期化完了
   updateStatusUI();
   spawnEnemies();
   document.getElementById("tutorial-start").addEventListener("click", () => {
@@ -133,7 +124,6 @@ async function loadQuizData() {
 
   } catch (error) {
     console.error("クイズデータ読み込みエラー:", error);
-    // エラー時はデフォルトデータを使用
     gameState.quizData = {
       "テスト": [
         { "q": "1+1は？", "a": ["1", "2", "3", "4"], "c": 1 },
@@ -166,7 +156,6 @@ function spawnEnemies() {
   const genres = Object.keys(gameState.quizData);
   const area = document.getElementById("game-area");
   
-  // 既存の敵を削除
   gameState.enemies.forEach(e => {
     if (e.el && e.el.parentNode) {
       e.el.remove();
@@ -181,8 +170,8 @@ function spawnEnemies() {
 
   const playerSize = 96;
   const enemySize = 72;
-  const safeZone = 150; // 安全地帯を少し小さく
-  const numberOfEnemies = 8; // 敵の数を少し減らす
+  const safeZone = 150;
+  const numberOfEnemies = 8;
 
   console.log("敵生成開始:", numberOfEnemies + "体");
 
@@ -190,7 +179,6 @@ function spawnEnemies() {
     const el = document.createElement("div");
     el.className = "enemy";
     
-    // 敵の背景画像を設定（相対パスで指定）
     const enemyImageNum = (i % 10) + 1;
     el.style.backgroundImage = `url('./images/enemy${enemyImageNum}.png')`;
 
@@ -216,7 +204,6 @@ function spawnEnemies() {
       attempts++;
     }
 
-    // 有効な位置が見つからない場合は端に配置
     if (!validPosition) {
       x = Math.random() < 0.5 ? 0 : area.clientWidth - enemySize;
       y = Math.random() * (area.clientHeight - enemySize);
@@ -229,11 +216,11 @@ function spawnEnemies() {
     const assignedGenre = genres[i % genres.length];
     const enemy = {
       el, x, y,
-      speed: 0.5 + Math.random() * 1.5, // 速度を少し遅く
+      speed: 0.5 + Math.random() * 1.5,
       angle: Math.random() * Math.PI * 2,
       hasHit: false,
       genre: assignedGenre,
-      lastQuizTime: 0  // 最後にクイズを出した時間を記録
+      lastQuizTime: 0
     };
     
     gameState.enemies.push(enemy);
@@ -250,11 +237,9 @@ function moveEnemies() {
   gameState.enemies.forEach(enemy => {
     if (!enemy.el || !enemy.el.parentNode) return;
     
-    // 新しい位置を計算
     enemy.x += Math.cos(enemy.angle) * enemy.speed;
     enemy.y += Math.sin(enemy.angle) * enemy.speed;
     
-    // 境界チェックと反射
     if (enemy.x <= 0 || enemy.x >= area.clientWidth - enemySize) {
       enemy.angle = Math.PI - enemy.angle;
       enemy.x = Math.max(0, Math.min(area.clientWidth - enemySize, enemy.x));
@@ -264,7 +249,6 @@ function moveEnemies() {
       enemy.y = Math.max(0, Math.min(area.clientHeight - enemySize, enemy.y));
     }
     
-    // DOM要素の位置を更新
     enemy.el.style.left = enemy.x + "px";
     enemy.el.style.top = enemy.y + "px";
   });
@@ -275,7 +259,7 @@ function checkCollision() {
   
   const playerSize = 96;
   const enemySize = 72;
-  const collisionDistance = 50; // 衝突判定距離を大きく
+  const collisionDistance = 50;
   
   const playerCenterX = gameState.player.x + playerSize / 2;
   const playerCenterY = gameState.player.y + playerSize / 2;
@@ -288,10 +272,9 @@ function checkCollision() {
     const enemyCenterY = enemy.y + enemySize / 2;
     const distance = Math.hypot(playerCenterX - enemyCenterX, playerCenterY - enemyCenterY);
 
-    // 衝突判定を行い、前回のクイズから1秒以上経過していればクイズを表示
     if (distance < collisionDistance && (currentTime - enemy.lastQuizTime) > 1000) {
       console.log("衝突検出！ジャンル:", enemy.genre, "距離:", Math.round(distance));
-      enemy.lastQuizTime = currentTime;  // クイズを出した時間を記録
+      enemy.lastQuizTime = currentTime;
       showQuiz(enemy);
     }
   });
@@ -307,9 +290,8 @@ function showQuiz(enemy) {
   if (!quizList || quizList.length === 0) {
     console.error(`ジャンル '${genre}' のクイズが見つかりません`);
     
-    // エラー時はHP減少
     gameState.player.hp--;
-   if (seWrong) {
+    if (seWrong) {
       seWrong.play().catch(e => console.warn("効果音再生エラー:", e));
     }
     updateStatusUI();
@@ -356,13 +338,11 @@ function handleAnswer(correct, enemy) {
       seCorrect.play().catch(e => console.warn("効果音再生エラー:", e));
     }
     
-    // 敵を削除
     if (enemy.el && enemy.el.parentNode) {
       enemy.el.remove();
     }
     gameState.enemies = gameState.enemies.filter(e => e !== enemy);
     
-    // 経験値増加
     gameState.player.exp += 20;
     if (gameState.player.exp >= 100) {
       gameState.player.level++;
@@ -371,8 +351,8 @@ function handleAnswer(correct, enemy) {
         seLevelup.play().catch(e => console.warn("効果音再生エラー:", e));
       }
       console.log(`⬆ レベルアップ！ Lv.${gameState.player.level}`);
+    }
 
-    // すべての敵を倒したら、再度敵を出現させる
     if (gameState.enemies.length === 0) {
       console.log("すべての敵を倒しました！新しい敵を出現させます。");
       spawnEnemies();
@@ -380,13 +360,10 @@ function handleAnswer(correct, enemy) {
 
   } else {
     console.log("不正解...");
-    if (document.getElementById("se-wrong")) {
-      document.getElementById("se-wrong").play();
+    if (seWrong) {
+      seWrong.play().catch(e => console.warn("効果音再生エラー:", e));
     }
     gameState.player.hp--;
-    
-    // 不正解の場合、敵は削除されずに残る
-    // hasHitフラグはリセットしない（時間制御を使用）
   }
 
   updateStatusUI();
@@ -416,7 +393,6 @@ function gameLoop() {
     return;
   }
 
-  // キー入力処理
   const dx = (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0) + 
             (vKeys.right ? 1 : 0) - (vKeys.left ? 1 : 0);
   const dy = (keys.ArrowDown ? 1 : 0) - (keys.ArrowUp ? 1 : 0) + 
