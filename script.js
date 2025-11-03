@@ -367,11 +367,10 @@ function handleAnswer(correct, enemy) {
     if (gameState.player.exp >= 100) {
       gameState.player.level++;
       gameState.player.exp = 0;
-      if (document.getElementById("se-levelup")) {
-        document.getElementById("se-levelup").play();
+      if (seLevelup) {
+        seLevelup.play().catch(e => console.warn("効果音再生エラー:", e));
       }
-      console.log("レベルアップ！ Lv." + gameState.player.level);
-    }
+      console.log(`⬆ レベルアップ！ Lv.${gameState.player.level}`);
 
     // すべての敵を倒したら、再度敵を出現させる
     if (gameState.enemies.length === 0) {
