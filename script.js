@@ -270,7 +270,7 @@ function checkCollision() {
   if (gameState.isPaused || !gameState.gameStarted) return;
   
   const playerSize = 96;
-  const enemySize = 90;
+  const enemySize = 72;
   const collisionDistance = 50; // 衝突判定距離を大きく
   
   const playerCenterX = gameState.player.x + playerSize / 2;
