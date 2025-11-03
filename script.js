@@ -309,8 +309,8 @@ function showQuiz(enemy) {
     
     // エラー時はHP減少
     gameState.player.hp--;
-    if (document.getElementById("se-wrong")) {
-      document.getElementById("se-wrong").play();
+   if (seWrong) {
+      seWrong.play().catch(e => console.warn("効果音再生エラー:", e));
     }
     updateStatusUI();
     
