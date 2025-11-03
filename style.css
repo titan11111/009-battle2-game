@@ -47,7 +47,7 @@ body {
   position: absolute;
   width: 144px;
   height: 144px;
-  background-image: url('./images/hero.PNG');
+  background-image: url('./images/hero.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
