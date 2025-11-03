@@ -4,6 +4,13 @@
   font-family: 'Press Start 2P', monospace !important;
 }
 
+html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -14,6 +21,8 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  width: 100%;
+  height: 100%;
 }
 
 .hidden {
@@ -34,26 +43,40 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./images/fi-rudo.png'),
-    linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
-  background-size: cover, 40px 40px, 40px 40px;
-  background-repeat: no-repeat, repeat, repeat;
-  background-position: center center, 0 0, 0 0;
+  background-image: url('./images/fi-rudo.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+#game-area::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
 }
 
 #player {
   position: absolute;
-  width: 144px;
-  height: 144px;
+  width: 96px;
+  height: 96px;
   background-image: url('./images/hero.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   z-index: 10;
   transition: all 0.1s ease;
-  /* デバッグ用緑枠線: border: 2px solid rgba(0, 255, 0, 0.5); */
+  box-sizing: border-box;  /* デバッグ用緑枠線: border: 2px solid rgba(0, 255, 0, 0.5); */
 }
 
 .enemy {
@@ -64,7 +87,7 @@ body {
   background-repeat: no-repeat;
   background-position: center;
   z-index: 5;
-  /* デバッグ用赤枠線: border: 2px solid rgba(255, 0, 0, 0.3); */
+  box-sizing: border-box;  /* デバッグ用赤枠線: border: 2px solid rgba(255, 0, 0, 0.3); */
 }
 
 /* アイテムスタイル */
@@ -130,8 +153,20 @@ body {
   font-size: 14px;
   flex-wrap: wrap;
   max-width: 80%;
+  box-sizing: border-box;  /* 👈 追加 */
 }
 
+#hp-container {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+#exp-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
 #hp-hearts {
   display: flex;
   gap: 2px;
@@ -465,7 +500,23 @@ body {
 }
 
 /* スマホ対応 */
-@media (max-width: 768px) {
+/* スマホ対応（600px以下） */
+@media (max-width: 600px) {
+  * {
+    font-size: 12px;
+  }
+  /* ... スマホ用スタイル ... */
+}
+
+/* タブレット対応（601px～1024px） */
+@media (min-width: 601px) and (max-width: 1024px) {
+  /* ... タブレット用スタイル ... */
+}
+
+/* PC対応（1025px以上） */
+@media (min-width: 1025px) {
+  /* デフォルトスタイルをそのまま使用 */
+}
   #status-bar {
     font-size: 12px;
     padding: 6px 10px;
