@@ -162,6 +162,23 @@ body {
   align-items: center;
 }
 
+#combo-container {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  background: rgba(255, 200, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 5px;
+  border: 1px solid #ffcc00;
+}
+
+#combo-count {
+  color: #ffcc00;
+  font-weight: bold;
+  min-width: 30px;
+  text-align: center;
+}
+
 #exp-container {
   display: flex;
   gap: 8px;
