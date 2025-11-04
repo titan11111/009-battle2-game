@@ -2,7 +2,7 @@ const keys = {};
 const vKeys = { up:false, down:false, left:false, right:false };
 
 const gameState = {
-  player: { x:0, y:0, speed:4, hp:3, exp:0, level:1 },
+  player: { x:0, y:0, speed:4, hp:3, exp:0, level:1, combo:0, maxImageLevel:1 },
   enemies: [],
   isPaused: false,
   quizData: {},
@@ -105,6 +105,15 @@ function updateStatusUI() {
   document.getElementById("exp-fill").style.width = `${(gameState.player.exp % 100)}%`;
   document.getElementById("exp-text").textContent = `${gameState.player.exp % 100}/100`;
   document.getElementById("level-display").textContent = `Lv.${gameState.player.level}`;
+  document.getElementById("combo-count").textContent = gameState.player.combo;
+  updatePlayerImage();
+}
+
+function updatePlayerImage() {
+  const imageName = gameState.player.maxImageLevel === 1 ? 'hero.png' : `hero${gameState.player.maxImageLevel}.png`;
+  const playerEl = document.getElementById("player");
+  playerEl.style.backgroundImage = `url('./images/${imageName}')`;
+  console.log(`🎮 コンボ: ${gameState.player.combo} → 最高レベル: ${gameState.player.maxImageLevel} → ${imageName}`);
 }
 
 async function loadQuizData() {
@@ -338,6 +347,21 @@ function handleAnswer(correct, enemy) {
       seCorrect.play().catch(e => console.warn("効果音再生エラー:", e));
     }
     
+    gameState.player.combo++;
+    
+    // maxImageLevelを計算・更新（最大8で止まる）
+    const currentLevel = Math.min(8, gameState.player.combo < 5 ? 1 : Math.floor((gameState.player.combo - 5) / 5) + 3);
+    if (currentLevel > gameState.player.maxImageLevel) {
+      gameState.player.maxImageLevel = currentLevel;
+      if (gameState.player.maxImageLevel === 3) {
+        console.log(`⬆️ 初進化！ HERO${gameState.player.maxImageLevel}になった！`);
+      } else if (gameState.player.maxImageLevel === 8) {
+        console.log(`⬆️ 最高進化！ HERO${gameState.player.maxImageLevel}（最大）になった！`);
+      } else {
+        console.log(`⬆️ 進化！ HERO${gameState.player.maxImageLevel}になった！`);
+      }
+    }
+    
     if (enemy.el && enemy.el.parentNode) {
       enemy.el.remove();
     }
@@ -363,6 +387,7 @@ function handleAnswer(correct, enemy) {
     if (seWrong) {
       seWrong.play().catch(e => console.warn("効果音再生エラー:", e));
     }
+    gameState.player.combo = 0;  // ← comboだけリセット！maxImageLevelは保持
     gameState.player.hp--;
   }
 
