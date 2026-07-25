@@ -1,12 +1,41 @@
 const keys = {};
 const vKeys = { up:false, down:false, left:false, right:false };
 
+const HERO_IMAGE_MAX = 8; // hero.png〜hero8.png（レベルに応じて装備が充実）
+const LEVELUP_CEREMONY_MS = 1200; // クロスフェード0.8s + 余韻
+const WAVE_SPAWN_MS = 550;
+const PLAYER_SIZE = Math.round(96 * 1.2); // 115px（従来96の1.2倍）
+const ENEMY_SIZE = 72;
+// スプライト余白を除いた実体サイズ比率（見た目どおり触れたときだけ当たる）
+const PLAYER_HIT_SCALE = 0.38;
+const ENEMY_HIT_SCALE = 0.40;
+// 全滅後の新敵：色味だけ変えて「別種族」感を出す（景色は触らない）
+const ENEMY_WAVE_FILTERS = [
+  "none",
+  "hue-rotate(55deg) saturate(1.45)",
+  "hue-rotate(135deg) saturate(1.4) brightness(1.05)",
+  "hue-rotate(210deg) saturate(1.5)",
+  "hue-rotate(280deg) saturate(1.35) brightness(1.08)",
+  "hue-rotate(320deg) saturate(1.55) contrast(1.1)"
+];
+
+const HERO_UNLOCK_TEXT = {
+  2: "赤シャツを着た！",
+  3: "ズボンを履いた！",
+  4: "棍棒と仲間を手に入れた！",
+  5: "ヘルメットをかぶった！",
+  6: "鎧を装着した！",
+  7: "盾を装備した！",
+  8: "剣を手に入れた！完全武装！"
+};
+
 const gameState = {
-  player: { x:0, y:0, speed:4, hp:3, exp:0, level:1, combo:0, maxImageLevel:1 },
+  player: { x:0, y:0, speed:4, hp:3, exp:0, level:1, combo:0 },
   enemies: [],
   isPaused: false,
   quizData: {},
-  gameStarted: false
+  gameStarted: false,
+  wave: 1 // 1=通常問題、2以降=難問＋敵の色味変化
 };
 
 let bgmField, seCorrect, seWrong, seLevelup;
@@ -77,7 +106,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   await loadQuizData();
-  
+
+  placePlayerAtCenter();
   updateStatusUI();
   spawnEnemies();
   document.getElementById("tutorial-start").addEventListener("click", () => {
@@ -89,6 +119,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   requestAnimationFrame(gameLoop);
 });
+
+function placePlayerAtCenter() {
+  const area = document.getElementById("game-area");
+  const playerEl = document.getElementById("player");
+  gameState.player.x = Math.max(0, (area.clientWidth - PLAYER_SIZE) / 2);
+  gameState.player.y = Math.max(0, (area.clientHeight - PLAYER_SIZE) / 2);
+  playerEl.style.left = gameState.player.x + "px";
+  playerEl.style.top = gameState.player.y + "px";
+}
 
 function startBGM() {
   if (bgmField && bgmField.paused) {
@@ -109,11 +148,77 @@ function updateStatusUI() {
   updatePlayerImage();
 }
 
+function getHeroImageName(level) {
+  const imageLevel = Math.max(1, Math.min(HERO_IMAGE_MAX, level));
+  return imageLevel === 1 ? "hero.png" : `hero${imageLevel}.png`;
+}
+
 function updatePlayerImage() {
-  const imageName = gameState.player.maxImageLevel === 1 ? 'hero.png' : `hero${gameState.player.maxImageLevel}.png`;
+  const imageName = getHeroImageName(gameState.player.level);
   const playerEl = document.getElementById("player");
   playerEl.style.backgroundImage = `url('./images/${imageName}')`;
-  console.log(`🎮 コンボ: ${gameState.player.combo} → 最高レベル: ${gameState.player.maxImageLevel} → ${imageName}`);
+}
+
+function getUnlockText(newLevel) {
+  return HERO_UNLOCK_TEXT[newLevel] || `Lv.${newLevel} に上がった！`;
+}
+
+function showLevelUpCeremony(fromLevel, toLevel) {
+  return new Promise(resolve => {
+    const container = document.getElementById("levelup-container");
+    const fromEl = document.getElementById("levelup-hero-from");
+    const toEl = document.getElementById("levelup-hero-to");
+    const textEl = document.getElementById("levelup-text");
+
+    fromEl.style.backgroundImage = `url('./images/${getHeroImageName(fromLevel)}')`;
+    toEl.style.backgroundImage = `url('./images/${getHeroImageName(toLevel)}')`;
+    textEl.textContent = getUnlockText(toLevel);
+
+    container.classList.remove("hidden", "playing");
+    // 次フレームでアニメ開始（transition/animation を確実に発火）
+    requestAnimationFrame(() => {
+      container.classList.add("playing");
+    });
+
+    setTimeout(() => {
+      container.classList.add("hidden");
+      container.classList.remove("playing");
+      resolve();
+    }, LEVELUP_CEREMONY_MS);
+  });
+}
+
+function getEnemyWaveFilter(wave) {
+  return ENEMY_WAVE_FILTERS[(Math.max(1, wave) - 1) % ENEMY_WAVE_FILTERS.length];
+}
+
+function applyEnemyWaveLook(el, wave, withSpawnAnim) {
+  el.style.setProperty("--enemy-filter", getEnemyWaveFilter(wave));
+  if (!withSpawnAnim) return;
+  el.classList.remove("wave-spawn");
+  void el.offsetWidth;
+  el.classList.add("wave-spawn");
+}
+
+/** 全滅後：新敵出現の短い演出（敵の色味変化のみ。景色は反転しない） */
+function playNewWaveAppear() {
+  return new Promise(resolve => {
+    setTimeout(resolve, WAVE_SPAWN_MS);
+  });
+}
+
+/** d未指定=かんたん(1)、d:2=むずかしい。ウェーブ2以降は難問を優先 */
+function pickQuizForWave(quizList, wave) {
+  if (!quizList || quizList.length === 0) return null;
+  const hard = quizList.filter(q => (q.d || 1) >= 2);
+  const easy = quizList.filter(q => (q.d || 1) < 2);
+  let pool;
+  if (wave >= 2) {
+    pool = hard.length > 0 ? hard : quizList;
+  } else {
+    pool = easy.length > 0 ? easy : quizList;
+  }
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 async function loadQuizData() {
@@ -148,14 +253,12 @@ function moveHero(dx, dy) {
   
   const area = document.getElementById("game-area");
   const playerEl = document.getElementById("player");
-  const playerWidth = 96;
-  const playerHeight = 96;
   
   const newX = gameState.player.x + dx * gameState.player.speed;
   const newY = gameState.player.y + dy * gameState.player.speed;
   
-  gameState.player.x = Math.max(0, Math.min(area.clientWidth - playerWidth, newX));
-  gameState.player.y = Math.max(0, Math.min(area.clientHeight - playerHeight, newY));
+  gameState.player.x = Math.max(0, Math.min(area.clientWidth - PLAYER_SIZE, newX));
+  gameState.player.y = Math.max(0, Math.min(area.clientHeight - PLAYER_SIZE, newY));
   
   playerEl.style.left = gameState.player.x + "px";
   playerEl.style.top = gameState.player.y + "px";
@@ -177,8 +280,8 @@ function spawnEnemies() {
     return;
   }
 
-  const playerSize = 96;
-  const enemySize = 72;
+  const playerSize = PLAYER_SIZE;
+  const enemySize = ENEMY_SIZE;
   const safeZone = 150;
   const numberOfEnemies = 8;
 
@@ -220,12 +323,15 @@ function spawnEnemies() {
 
     el.style.left = x + "px";
     el.style.top = y + "px";
+    applyEnemyWaveLook(el, gameState.wave, gameState.wave >= 2);
     area.appendChild(el);
 
     const assignedGenre = genres[i % genres.length];
+    // ウェーブが進むほど少し速く
+    const speedBoost = Math.min(1.2, (gameState.wave - 1) * 0.15);
     const enemy = {
       el, x, y,
-      speed: 0.5 + Math.random() * 1.5,
+      speed: 0.5 + Math.random() * 1.5 + speedBoost,
       angle: Math.random() * Math.PI * 2,
       hasHit: false,
       genre: assignedGenre,
@@ -241,7 +347,7 @@ function moveEnemies() {
   if (gameState.isPaused || !gameState.gameStarted) return;
   
   const area = document.getElementById("game-area");
-  const enemySize = 90;
+  const enemySize = ENEMY_SIZE;
   
   gameState.enemies.forEach(enemy => {
     if (!enemy.el || !enemy.el.parentNode) return;
@@ -263,26 +369,33 @@ function moveEnemies() {
   });
 }
 
+function hitboxesOverlap(px, py, ex, ey) {
+  const pPad = PLAYER_SIZE * (1 - PLAYER_HIT_SCALE) / 2;
+  const ePad = ENEMY_SIZE * (1 - ENEMY_HIT_SCALE) / 2;
+  const pLeft = px + pPad;
+  const pRight = px + PLAYER_SIZE - pPad;
+  const pTop = py + pPad;
+  const pBottom = py + PLAYER_SIZE - pPad;
+  const eLeft = ex + ePad;
+  const eRight = ex + ENEMY_SIZE - ePad;
+  const eTop = ey + ePad;
+  const eBottom = ey + ENEMY_SIZE - ePad;
+  return pLeft < eRight && pRight > eLeft && pTop < eBottom && pBottom > eTop;
+}
+
 function checkCollision() {
   if (gameState.isPaused || !gameState.gameStarted) return;
   
-  const playerSize = 96;
-  const enemySize = 72;
-  const collisionDistance = 50;
-  
-  const playerCenterX = gameState.player.x + playerSize / 2;
-  const playerCenterY = gameState.player.y + playerSize / 2;
   const currentTime = Date.now();
 
   gameState.enemies.forEach(enemy => {
     if (!enemy.el || !enemy.el.parentNode) return;
 
-    const enemyCenterX = enemy.x + enemySize / 2;
-    const enemyCenterY = enemy.y + enemySize / 2;
-    const distance = Math.hypot(playerCenterX - enemyCenterX, playerCenterY - enemyCenterY);
-
-    if (distance < collisionDistance && (currentTime - enemy.lastQuizTime) > 1000) {
-      console.log("衝突検出！ジャンル:", enemy.genre, "距離:", Math.round(distance));
+    if (
+      hitboxesOverlap(gameState.player.x, gameState.player.y, enemy.x, enemy.y) &&
+      (currentTime - enemy.lastQuizTime) > 1000
+    ) {
+      console.log("衝突検出！ジャンル:", enemy.genre);
       enemy.lastQuizTime = currentTime;
       showQuiz(enemy);
     }
@@ -314,13 +427,20 @@ function showQuiz(enemy) {
     return;
   }
 
-  const quiz = quizList[Math.floor(Math.random() * quizList.length)];
+  const quiz = pickQuizForWave(quizList, gameState.wave);
+  if (!quiz) {
+    gameState.isPaused = false;
+    return;
+  }
 
-  document.getElementById("quiz-genre").textContent = `【${genre}】の問題`;
+  const isHard = (quiz.d || 1) >= 2;
+  const genreEl = document.getElementById("quiz-genre");
+  genreEl.textContent = isHard ? `【${genre}】むずかしい問題` : `【${genre}】の問題`;
+  genreEl.classList.toggle("quiz-hard", isHard);
   document.getElementById("quiz-question").textContent = quiz.q;
   
   const optionsEl = document.getElementById("quiz-options");
-  optionsEl.innerHTML = "";
+  optionsEl.replaceChildren();
   
   quiz.a.forEach((text, i) => {
     const btn = document.createElement("button");
@@ -336,10 +456,13 @@ function showQuiz(enemy) {
   quizEl.style.display = "flex";
 }
 
-function handleAnswer(correct, enemy) {
+async function handleAnswer(correct, enemy) {
   const quizEl = document.getElementById("quiz-container");
   quizEl.classList.add("hidden");
   quizEl.style.display = "none";
+
+  let leveledUpFrom = null;
+  let waveCleared = false;
 
   if (correct) {
     console.log("✓ 正解！");
@@ -348,20 +471,7 @@ function handleAnswer(correct, enemy) {
     }
     
     gameState.player.combo++;
-    
-    // maxImageLevelを計算・更新（最大8で止まる）
-    const currentLevel = Math.min(8, gameState.player.combo < 5 ? 1 : Math.floor((gameState.player.combo - 5) / 5) + 3);
-    if (currentLevel > gameState.player.maxImageLevel) {
-      gameState.player.maxImageLevel = currentLevel;
-      if (gameState.player.maxImageLevel === 3) {
-        console.log(`⬆️ 初進化！ HERO${gameState.player.maxImageLevel}になった！`);
-      } else if (gameState.player.maxImageLevel === 8) {
-        console.log(`⬆️ 最高進化！ HERO${gameState.player.maxImageLevel}（最大）になった！`);
-      } else {
-        console.log(`⬆️ 進化！ HERO${gameState.player.maxImageLevel}になった！`);
-      }
-    }
-    
+
     if (enemy.el && enemy.el.parentNode) {
       enemy.el.remove();
     }
@@ -369,17 +479,16 @@ function handleAnswer(correct, enemy) {
     
     gameState.player.exp += 20;
     if (gameState.player.exp >= 100) {
+      leveledUpFrom = gameState.player.level;
       gameState.player.level++;
       gameState.player.exp = 0;
       if (seLevelup) {
         seLevelup.play().catch(e => console.warn("効果音再生エラー:", e));
       }
-      console.log(`⬆ レベルアップ！ Lv.${gameState.player.level}`);
     }
 
     if (gameState.enemies.length === 0) {
-      console.log("すべての敵を倒しました！新しい敵を出現させます。");
-      spawnEnemies();
+      waveCleared = true;
     }
 
   } else {
@@ -387,11 +496,24 @@ function handleAnswer(correct, enemy) {
     if (seWrong) {
       seWrong.play().catch(e => console.warn("効果音再生エラー:", e));
     }
-    gameState.player.combo = 0;  // ← comboだけリセット！maxImageLevelは保持
+    gameState.player.combo = 0;
     gameState.player.hp--;
   }
 
   updateStatusUI();
+
+  if (leveledUpFrom !== null) {
+    gameState.isPaused = true;
+    await showLevelUpCeremony(leveledUpFrom, gameState.player.level);
+  }
+
+  if (waveCleared) {
+    gameState.isPaused = true;
+    gameState.wave += 1;
+    spawnEnemies();
+    await playNewWaveAppear();
+  }
+
   gameState.isPaused = false;
   
   if (gameState.player.hp <= 0) {

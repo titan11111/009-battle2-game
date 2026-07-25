@@ -2,8 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>クイズバトルRPG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>バトルクイズゲーム</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
@@ -21,15 +21,11 @@
 
     <div id="game-area"><div id="player"></div></div>
 
-    <div id="controller">
-      <div id="controller-row1">
-        <button id="btn-up">↑</button>
-      </div>
-      <div id="controller-row2">
-        <button id="btn-left">←</button>
-        <button id="btn-down">↓</button>
-        <button id="btn-right">→</button>
-      </div>
+    <div id="controller" aria-label="移動パッド">
+      <button type="button" id="btn-up" aria-label="上"><span class="pad-arrow pad-up"></span></button>
+      <button type="button" id="btn-left" aria-label="左"><span class="pad-arrow pad-left"></span></button>
+      <button type="button" id="btn-down" aria-label="下"><span class="pad-arrow pad-down"></span></button>
+      <button type="button" id="btn-right" aria-label="右"><span class="pad-arrow pad-right"></span></button>
     </div>
   </div>
 
@@ -39,6 +35,7 @@
       <p>矢印キーまたは画面のボタンで移動します。</p>
       <h2>目的</h2>
       <p>敵を倒してレベルアップを目指そう！</p>
+      <p>レベルが上がるごとに服や装備が充実していくぞ！</p>
       <button id="tutorial-start">スタート</button>
     </div>
   </div>
@@ -55,6 +52,17 @@
     <div id="gameover-box">
       <p id="gameover-text">ゲームオーバー</p>
       <button id="restart-button">リトライ</button>
+    </div>
+  </div>
+
+  <div id="levelup-container" class="hidden" aria-live="polite">
+    <div id="levelup-box">
+      <p id="levelup-title">LEVEL UP!</p>
+      <div id="levelup-stage">
+        <div id="levelup-hero-from"></div>
+        <div id="levelup-hero-to"></div>
+      </div>
+      <p id="levelup-text"></p>
     </div>
   </div>
   

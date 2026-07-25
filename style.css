@@ -68,8 +68,8 @@ body {
 
 #player {
   position: absolute;
-  width: 96px;
-  height: 96px;
+  width: 115px;
+  height: 115px;
   background-image: url('./images/hero.png');
   background-size: contain;
   background-repeat: no-repeat;
@@ -88,6 +88,31 @@ body {
   background-position: center;
   z-index: 5;
   box-sizing: border-box;
+  /* ウェーブごとの色味（JSから --enemy-filter を上書き） */
+  filter: var(--enemy-filter, none);
+}
+
+/* 新ウェーブ登場：敵だけが色変わりしつつ出現（景色は反転しない） */
+.enemy.wave-spawn {
+  animation: enemyWaveSpawn 0.55s ease-out;
+}
+
+@keyframes enemyWaveSpawn {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.2;
+    filter: brightness(2.2) saturate(0.2);
+  }
+  45% {
+    transform: scale(1.12);
+    opacity: 1;
+    filter: brightness(1.35) saturate(1.6) hue-rotate(40deg);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: var(--enemy-filter, none);
+  }
 }
 
 /* アイテムスタイル */
@@ -244,48 +269,79 @@ body {
 
 #controller {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: calc(12px + env(safe-area-inset-left, 0px));
   z-index: 200;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  grid-template-rows: repeat(3, 64px);
+  gap: 6px;
+  opacity: 0.85;
 }
 
-#controller-row1 {
-  display: flex;
-  justify-content: center;
-}
-
-#controller-row2 {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-}
+#btn-up { grid-column: 2; grid-row: 1; }
+#btn-left { grid-column: 1; grid-row: 2; }
+#btn-down { grid-column: 2; grid-row: 3; }
+#btn-right { grid-column: 3; grid-row: 2; }
 
 #controller button {
-  width: 60px;
-  height: 60px;
-  font-size: 20px;
-  font-weight: bold;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   background: rgba(255, 255, 255, 0.15);
   color: white;
-  border: 3px solid rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  border-radius: 14px;
   cursor: pointer;
-  touch-action: manipulation;
-  transition: all 0.1s ease;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease, background 0.08s ease, border-color 0.08s ease;
 }
 
 #controller button:active {
   background: rgba(255, 255, 255, 0.4);
   border-color: white;
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 #controller button:hover {
   background: rgba(255, 255, 255, 0.25);
+}
+
+/* 十字キー矢印（上下左右を同じ三角形スタイルで統一） */
+.pad-arrow {
+  display: block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.pad-up {
+  border-width: 0 11px 16px 11px;
+  border-color: transparent transparent #fff transparent;
+}
+
+.pad-down {
+  border-width: 16px 11px 0 11px;
+  border-color: #fff transparent transparent transparent;
+}
+
+.pad-left {
+  border-width: 11px 16px 11px 0;
+  border-color: transparent #fff transparent transparent;
+}
+
+.pad-right {
+  border-width: 11px 0 11px 16px;
+  border-color: transparent transparent transparent #fff;
+}
+
+/* むずかしい問題のジャンル表示 */
+#quiz-genre.quiz-hard {
+  color: #ffb347;
 }
 
 /* 特殊能力ボタン */
@@ -323,78 +379,100 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* クイズ画面 */
+/* クイズ画面（iPhone縦持ち向け） */
 #quiz-container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.9);
+  height: 100dvh;
+  background: rgba(0, 0, 0, 0.88);
   z-index: 1000;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
+  padding:
+    calc(12px + env(safe-area-inset-top, 0px))
+    calc(12px + env(safe-area-inset-right, 0px))
+    calc(16px + env(safe-area-inset-bottom, 0px))
+    calc(12px + env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
 }
 
 #quiz-box {
-  background: #222;
-  border: 3px solid white;
-  border-radius: 12px;
-  padding: 20px;
-  max-width: 80%;
-  max-height: 80vh;
-  overflow-y: auto;
+  width: min(100%, 420px);
+  max-height: min(78vh, 720px);
+  background: #1a1a1a;
+  border: 3px solid #fff;
+  border-radius: 16px;
+  padding: 14px 14px 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
 }
 
 #quiz-genre {
-  font-size: 14px;
+  margin: 0;
+  font-size: 11px;
   color: #ffcc00;
-  margin-bottom: 10px;
   text-align: center;
+  letter-spacing: 1px;
 }
 
 #quiz-question {
-  font-size: 14px;
+  margin: 0;
+  font-size: clamp(11px, 3.4vw, 14px);
   color: white;
-  margin: 20px 0;
-  line-height: 1.6;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
+  line-height: 1.7;
+  padding: 12px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
   border: 2px solid rgba(255, 255, 255, 0.2);
   text-align: center;
+  flex-shrink: 0;
 }
 
 #quiz-options {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin: 20px 0;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+  flex: 1;
+  min-height: 0;
 }
 
 #quiz-options button {
   font-family: 'Press Start 2P', monospace;
-  font-size: 12px;
-  padding: 12px 18px;
-  background: linear-gradient(135deg, #4a4a4a, #2a2a2a);
+  font-size: clamp(9px, 2.6vw, 11px);
+  line-height: 1.55;
+  padding: 12px 8px;
+  background: linear-gradient(180deg, #4a4a4a, #2a2a2a);
   color: white;
   border: 2px solid #aaa;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.08s ease, border-color 0.08s ease, background 0.08s ease;
   text-align: center;
-  min-height: 50px;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  word-break: break-word;
 }
 
 #quiz-options button:hover {
-  background: linear-gradient(135deg, #5a5a5a, #3a3a3a);
+  background: linear-gradient(180deg, #5a5a5a, #3a3a3a);
   border-color: #ffcc00;
-  transform: translateY(-2px);
 }
 
 #quiz-options button:active {
-  transform: translateY(0);
+  transform: scale(0.96);
+  border-color: #ffcc00;
 }
 
 /* チュートリアル */
@@ -435,6 +513,97 @@ body {
   padding: 10px 20px;
   font-size: 14px;
   cursor: pointer;
+}
+
+/* レベルアップ演出 */
+#levelup-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 1800;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+#levelup-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  padding: 12px 20px;
+}
+
+#levelup-title {
+  margin: 0;
+  font-size: 14px;
+  color: #ffcc00;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(255, 204, 0, 0.6);
+}
+
+#levelup-stage {
+  position: relative;
+  width: min(42vw, 200px);
+  height: min(42vw, 200px);
+}
+
+#levelup-hero-from,
+#levelup-hero-to {
+  position: absolute;
+  inset: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#levelup-hero-from {
+  opacity: 1;
+}
+
+#levelup-hero-to {
+  opacity: 0;
+}
+
+#levelup-container.playing #levelup-hero-from {
+  animation: levelupFadeOut 0.8s ease forwards;
+}
+
+#levelup-container.playing #levelup-hero-to {
+  animation: levelupFadeIn 0.8s ease forwards;
+}
+
+#levelup-container.playing #levelup-box {
+  animation: levelupPop 0.35s ease-out;
+}
+
+#levelup-text {
+  margin: 0;
+  max-width: 90vw;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #ffffff;
+  text-shadow: 0 2px 0 #000, 0 0 12px rgba(255, 255, 255, 0.35);
+}
+
+@keyframes levelupFadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.92); }
+}
+
+@keyframes levelupFadeIn {
+  from { opacity: 0; transform: scale(1.08); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes levelupPop {
+  from { transform: scale(0.86); opacity: 0.4; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 /* ゲームオーバー画面 */
@@ -516,21 +685,24 @@ body {
   to { transform: scale(1.05); opacity: 0.8; }
 }
 
-/* スマホ対応 */
-/* スマホ対応（600px以下） */
+/* レスポンシブ */
 @media (max-width: 600px) {
-  * {
-    font-size: 12px;
+  #controller {
+    grid-template-columns: repeat(3, 58px);
+    grid-template-rows: repeat(3, 58px);
+  }
+
+  #controller button {
+    width: 58px;
+    height: 58px;
+  }
+
+  #quiz-options button {
+    min-height: 68px;
   }
 }
 
-/* タブレット対応（601px～1024px） */
-@media (min-width: 601px) and (max-width: 1024px) {
-}
-
-/* PC対応（1025px以上） */
 @media (min-width: 1025px) {
-}
   #status-bar {
     font-size: 12px;
     padding: 6px 10px;
@@ -539,65 +711,55 @@ body {
   }
 
   #controller {
-    gap: 15px;
-  }
-
-  #controller-row2 {
-    gap: 15px;
+    grid-template-columns: repeat(3, 72px);
+    grid-template-rows: repeat(3, 72px);
+    gap: 8px;
   }
 
   #controller button {
-    width: 80px;
-    height: 80px;
-    font-size: 28px;
+    width: 72px;
+    height: 72px;
   }
-  
+
+  .pad-up { border-width: 0 12px 18px 12px; }
+  .pad-down { border-width: 18px 12px 0 12px; }
+  .pad-left { border-width: 12px 18px 12px 0; }
+  .pad-right { border-width: 12px 0 12px 18px; }
+
   #exp-bar {
     width: 80px;
     height: 12px;
   }
-  
-  #score-display, #combo-display {
-    font-size: 8px;
-    padding: 2px 6px;
+
+  #quiz-container {
+    align-items: center;
   }
-  
+
   #quiz-box {
-    padding: 15px;
-    max-width: 95%;
+    padding: 18px;
+    width: min(100%, 480px);
   }
-  
+
   #quiz-question {
-    font-size: 12px;
+    font-size: 13px;
   }
-  
+
+  #quiz-options {
+    gap: 12px;
+  }
+
   #quiz-options button {
-    font-size: 10px;
-    padding: 10px 15px;
+    font-size: 11px;
+    min-height: 80px;
+    padding: 14px 10px;
   }
-  
+
   #gameover-text {
     font-size: 1.5em;
   }
-  
+
   #restart-button {
     font-size: 1em;
     padding: 12px 25px;
   }
-  
-  .item {
-    width: 30px;
-    height: 30px;
-    font-size: 16px;
-  }
-  
-  .ability-buttons {
-    bottom: 10px;
-    right: 10px;
-  }
-  
-  .ability-button {
-    width: 40px;
-    height: 40px;
-    font-size: 14px;
-  }
+}
