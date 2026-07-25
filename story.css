@@ -1,0 +1,344 @@
+/* タイトル画面 */
+#title-container {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(120, 60, 20, 0.35), transparent 55%),
+    linear-gradient(180deg, #1a0f08 0%, #2b160c 40%, #0d0a08 100%);
+  padding: env(safe-area-inset-top, 12px) 16px env(safe-area-inset-bottom, 16px);
+  box-sizing: border-box;
+}
+
+#title-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("./images/fi-rudo2.png");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.28;
+  filter: sepia(0.45) brightness(0.55) contrast(1.1);
+  pointer-events: none;
+}
+
+.title-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.72) 100%);
+  pointer-events: none;
+}
+
+.title-embers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 20% 70%, rgba(255, 180, 60, 0.7), transparent),
+    radial-gradient(2px 2px at 70% 60%, rgba(255, 120, 40, 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 40% 40%, rgba(255, 200, 100, 0.5), transparent),
+    radial-gradient(2px 2px at 85% 75%, rgba(255, 140, 50, 0.45), transparent);
+  animation: emberDrift 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes emberDrift {
+  from { opacity: 0.45; transform: translateY(0); }
+  to { opacity: 0.9; transform: translateY(-10px); }
+}
+
+#title-box {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  padding: 28px 18px 24px;
+  border: 3px solid #c9a227;
+  background: rgba(18, 10, 6, 0.82);
+  box-shadow: 0 0 0 2px #5a3a12, 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+.title-tag {
+  margin: 0 0 14px;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: #d4b56a;
+  line-height: 1.6;
+}
+
+#game-title {
+  margin: 0 0 16px;
+  font-size: clamp(16px, 5.2vw, 22px);
+  line-height: 1.55;
+  color: #ffe9a8;
+  text-shadow:
+    0 0 18px rgba(255, 160, 40, 0.45),
+    2px 2px 0 #4a2208;
+  animation: titleGlow 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.15); }
+}
+
+.title-story {
+  margin: 0 0 18px;
+  font-size: 9px;
+  line-height: 1.9;
+  color: #e8d7b8;
+}
+
+.title-hero {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 14px;
+  background-image: url("./images/hero.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55));
+  animation: titleHeroBob 1.8s ease-in-out infinite;
+}
+
+@keyframes titleHeroBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.title-hint {
+  margin: 0 0 18px;
+  font-size: 8px;
+  line-height: 1.7;
+  color: #a89878;
+}
+
+#title-start {
+  min-width: 180px;
+  min-height: 52px;
+  padding: 14px 28px;
+  border: 3px solid #ffe08a;
+  background: linear-gradient(180deg, #c45c1a, #8a2e08);
+  color: #fff6d8;
+  font-size: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease, opacity 0.08s ease;
+}
+
+#title-start:active {
+  transform: scale(0.94);
+  opacity: 0.9;
+}
+
+/* 魔王バナー */
+#boss-banner {
+  position: fixed;
+  inset: 0;
+  z-index: 450;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(40, 0, 0, 0.72);
+  pointer-events: none;
+}
+
+#boss-banner p {
+  margin: 0;
+  font-size: clamp(16px, 5vw, 24px);
+  color: #ff4d4d;
+  text-shadow: 0 0 20px #ff0000, 2px 2px 0 #000;
+  animation: bossBannerPulse 0.9s ease-in-out;
+}
+
+@keyframes bossBannerPulse {
+  0% { transform: scale(0.6); opacity: 0; }
+  40% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+#boss-hp-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ff8a8a;
+  font-size: 10px;
+}
+
+#boss-hp-hearts {
+  color: #ff3333;
+  letter-spacing: 1px;
+}
+
+.enemy.boss {
+  width: 140px;
+  height: 140px;
+  z-index: 8;
+  filter: drop-shadow(0 0 12px rgba(255, 40, 40, 0.55));
+}
+
+.enemy.boss.wave-spawn {
+  animation: bossSpawn 0.7s ease-out;
+}
+
+@keyframes bossSpawn {
+  0% { transform: scale(0.2); opacity: 0; filter: brightness(3); }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.enemy.boss.hit-flash {
+  animation: bossHit 0.28s ease;
+}
+
+@keyframes bossHit {
+  0%, 100% { filter: drop-shadow(0 0 12px rgba(255, 40, 40, 0.55)); }
+  50% { filter: brightness(2.2) saturate(0.2); }
+}
+
+/* エンディング */
+#ending-container {
+  position: fixed;
+  inset: 0;
+  z-index: 480;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  background: #1a2430;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+#ending-container.hidden {
+  display: none !important;
+}
+
+#ending-village {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+#ending-container.play #ending-village {
+  opacity: 1;
+}
+
+#ending-village svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.villager {
+  animation: villagerJump 0.7s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+.villager.v1 { animation-delay: 0s; }
+.villager.v2 { animation-delay: 0.12s; }
+.villager.v3 { animation-delay: 0.24s; }
+.villager.v4 { animation-delay: 0.08s; }
+.villager.v5 { animation-delay: 0.2s; }
+
+@keyframes villagerJump {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+#ending-copy {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  width: min(92vw, 420px);
+  padding: 16px;
+  margin-bottom: 28px;
+  background: rgba(10, 14, 20, 0.55);
+  border: 2px solid rgba(255, 230, 160, 0.35);
+}
+
+#ending-peace,
+#ending-the-end,
+#ending-logo {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+#ending-container.play #ending-peace {
+  animation: endingFadeIn 1s ease 0.8s forwards;
+}
+
+#ending-container.play #ending-the-end {
+  animation: endingFadeIn 1.2s ease 2s forwards;
+}
+
+#ending-container.play #ending-logo {
+  animation: endingLogoIn 2s ease 3.4s forwards;
+}
+
+#ending-peace {
+  margin: 0 0 14px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #fff0c8;
+}
+
+#ending-the-end {
+  margin: 0 0 18px;
+  font-size: clamp(20px, 7vw, 28px);
+  color: #ffe08a;
+  text-shadow: 0 0 24px rgba(255, 200, 80, 0.45);
+}
+
+#ending-logo {
+  margin: 0 0 20px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 236, 190, 0.55);
+}
+
+@keyframes endingFadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes endingLogoIn {
+  to { opacity: 0.72; transform: translateY(0); }
+}
+
+#ending-title-btn {
+  min-width: 160px;
+  min-height: 48px;
+  padding: 12px 22px;
+  border: 2px solid #ffe08a;
+  background: linear-gradient(180deg, #3a6b3a, #1f3f1f);
+  color: #f5ffe8;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease;
+}
+
+#ending-container.play #ending-title-btn {
+  animation: endingFadeIn 0.8s ease 4.4s forwards;
+  animation-fill-mode: forwards;
+}
+
+#ending-container.ready #ending-title-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#ending-title-btn:active {
+  transform: scale(0.94);
+}
+
+@media (max-width: 380px) {
+  .title-story { font-size: 8px; }
+  #title-box { padding: 22px 12px 18px; }
+}

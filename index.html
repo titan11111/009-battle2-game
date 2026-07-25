@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>バトルクイズゲーム</title>
   <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./story.css" />
 </head>
 <body>
   <div id="game-container">
@@ -17,6 +18,9 @@
         <span id="exp-text">0/100</span>
       </div>
       <div id="level-display">Lv.1</div>
+      <div id="boss-hp-container" class="hidden" aria-live="polite">
+        <span>魔王:</span><div id="boss-hp-hearts"></div>
+      </div>
     </div>
 
     <div id="game-area"><div id="player"></div></div>
@@ -29,14 +33,20 @@
     </div>
   </div>
 
-  <div id="tutorial-container">
-    <div id="tutorial-box">
-      <h2>操作方法</h2>
-      <p>矢印キーまたは画面のボタンで移動します。</p>
-      <h2>目的</h2>
-      <p>敵を倒してレベルアップを目指そう！</p>
-      <p>レベルが上がるごとに服や装備が充実していくぞ！</p>
-      <button id="tutorial-start">スタート</button>
+  <!-- タイトル画面 -->
+  <div id="title-container">
+    <div class="title-vignette" aria-hidden="true"></div>
+    <div class="title-embers" aria-hidden="true"></div>
+    <div id="title-box">
+      <p class="title-tag">中世ファンタジー・クイズRPG</p>
+      <h1 id="game-title">バトルクイズゲーム</h1>
+      <p class="title-story">
+        鎖につながれた奴隷は、知恵で敵を打ち破り、<br />
+        装備を揃え、やがて魔王へ挑む——。
+      </p>
+      <div class="title-hero" aria-hidden="true"></div>
+      <p class="title-hint">矢印キー／画面ボタンで移動　敵に触れてクイズ！</p>
+      <button type="button" id="title-start">スタート</button>
     </div>
   </div>
 
@@ -51,7 +61,7 @@
   <div id="gameover-container" class="hidden">
     <div id="gameover-box">
       <p id="gameover-text">ゲームオーバー</p>
-      <button id="restart-button">リトライ</button>
+      <button type="button" id="restart-button">リトライ</button>
     </div>
   </div>
 
@@ -65,8 +75,87 @@
       <p id="levelup-text"></p>
     </div>
   </div>
-  
+
+  <!-- エンディング：村の平和 -->
+  <div id="ending-container" class="hidden" aria-live="polite">
+    <div id="ending-village" aria-hidden="true">
+      <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+        <defs>
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#7ec8ff"/>
+            <stop offset="55%" stop-color="#ffe6a8"/>
+            <stop offset="100%" stop-color="#88c96a"/>
+          </linearGradient>
+        </defs>
+        <rect width="360" height="220" fill="url(#skyGrad)"/>
+        <!-- 山 -->
+        <path d="M0 120 L50 70 L100 120 Z" fill="#6a9e5a"/>
+        <path d="M70 120 L140 55 L210 120 Z" fill="#5d8f4f"/>
+        <path d="M180 120 L250 65 L320 120 Z" fill="#6a9e5a"/>
+        <path d="M280 120 L340 80 L360 120 Z" fill="#5d8f4f"/>
+        <!-- 地面 -->
+        <rect y="120" width="360" height="100" fill="#6fbf4e"/>
+        <ellipse cx="180" cy="200" rx="200" ry="40" fill="#5aa83d" opacity="0.5"/>
+        <!-- 家1 -->
+        <rect x="40" y="100" width="54" height="40" fill="#d4a574"/>
+        <polygon points="36,100 67,72 98,100" fill="#c45c3a"/>
+        <rect x="58" y="116" width="14" height="24" fill="#6b3e2a"/>
+        <rect x="48" y="108" width="12" height="10" fill="#7ec8ff"/>
+        <!-- 家2 -->
+        <rect x="250" y="95" width="60" height="45" fill="#e8c49a"/>
+        <polygon points="245,95 280,64 315,95" fill="#8b4513"/>
+        <rect x="272" y="112" width="16" height="28" fill="#5a3820"/>
+        <rect x="258" y="104" width="12" height="10" fill="#7ec8ff"/>
+        <!-- 旗 -->
+        <line x1="180" y1="70" x2="180" y2="120" stroke="#5a3820" stroke-width="3"/>
+        <polygon points="180,72 210,82 180,92" fill="#e74c3c"/>
+        <!-- 村人たち（跳ねる） -->
+        <g class="villager v1">
+          <circle cx="110" cy="145" r="7" fill="#f0c8a0"/>
+          <rect x="104" y="152" width="12" height="16" rx="2" fill="#3b7ddd"/>
+          <rect x="104" y="168" width="5" height="10" fill="#3a2a1a"/>
+          <rect x="111" y="168" width="5" height="10" fill="#3a2a1a"/>
+        </g>
+        <g class="villager v2">
+          <circle cx="150" cy="148" r="7" fill="#f5d0b0"/>
+          <rect x="144" y="155" width="12" height="16" rx="2" fill="#e74c3c"/>
+          <rect x="144" y="171" width="5" height="10" fill="#3a2a1a"/>
+          <rect x="151" y="171" width="5" height="10" fill="#3a2a1a"/>
+        </g>
+        <g class="villager v3">
+          <circle cx="190" cy="146" r="7" fill="#e8b890"/>
+          <rect x="184" y="153" width="12" height="16" rx="2" fill="#2ecc71"/>
+          <rect x="184" y="169" width="5" height="10" fill="#3a2a1a"/>
+          <rect x="191" y="169" width="5" height="10" fill="#3a2a1a"/>
+        </g>
+        <g class="villager v4">
+          <circle cx="230" cy="149" r="7" fill="#f0c8a0"/>
+          <rect x="224" y="156" width="12" height="16" rx="2" fill="#9b59b6"/>
+          <rect x="224" y="172" width="5" height="10" fill="#3a2a1a"/>
+          <rect x="231" y="172" width="5" height="10" fill="#3a2a1a"/>
+        </g>
+        <g class="villager v5">
+          <circle cx="130" cy="158" r="6" fill="#f5d0b0"/>
+          <rect x="125" y="164" width="10" height="12" rx="2" fill="#f1c40f"/>
+          <rect x="125" y="176" width="4" height="8" fill="#3a2a1a"/>
+          <rect x="131" y="176" width="4" height="8" fill="#3a2a1a"/>
+        </g>
+      </svg>
+    </div>
+    <div id="ending-copy">
+      <p id="ending-peace">村に平和が訪れた</p>
+      <p id="ending-the-end">THE END</p>
+      <p id="ending-logo">バトルクイズゲーム</p>
+      <button type="button" id="ending-title-btn">タイトルへ</button>
+    </div>
+  </div>
+
+  <div id="boss-banner" class="hidden" aria-live="assertive">
+    <p>魔王が現れた！</p>
+  </div>
+
 <audio id="bgm-field" preload="auto"></audio>
+<audio id="bgm-boss" preload="auto"></audio>
 <audio id="se-correct" preload="auto"></audio>
 <audio id="se-wrong" preload="auto"></audio>
 <audio id="se-levelup" preload="auto"></audio>
